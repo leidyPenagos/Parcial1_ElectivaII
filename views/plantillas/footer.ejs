@@ -1,0 +1,75 @@
+</main>
+    
+    <footer class="footer py-3 mt-auto">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <span class="text-muted">
+                        <i class="bi bi-code-slash"></i> 
+                        Evaluación EJS - Node.js con ES Modules
+                    </span>
+                </div>
+                <div class="col-md-6 text-end">
+                    <span class="text-muted">
+                        <i class="bi bi-calendar3"></i> 
+                        <%= new Date().getFullYear() %>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Script para mostrar y ocultar alertas automáticamente
+        document.addEventListener('DOMContentLoaded', function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }, 5000);
+            });
+        });
+
+        // Script para manejar selects dependientes de departamentos y municipios
+        const departmentSelect = document.getElementById('departamento');
+        const municipalitySelect = document.getElementById('municipio');
+
+        if (departmentSelect && municipalitySelect) {
+            departmentSelect.addEventListener('change', function() {
+                const departmentCode = this.value;
+                
+                // Limpiar municipios
+                municipalitySelect.innerHTML = '<option value="">Seleccione un municipio</option>';
+                municipalitySelect.disabled = !departmentCode;
+                
+                if (departmentCode) {
+                    // Cargar municipios del departamento seleccionado
+                    fetch(`/api/towns/${departmentCode}`)
+                        .then(response => response.json())
+                        .then(towns => {
+                            towns.forEach(town => {
+                                const option = document.createElement('option');
+                                option.value = town.name;
+                                option.textContent = town.name;
+                                municipalitySelect.appendChild(option);
+                            });
+                        })
+                        .catch(error => {
+                            console.error('Error cargando municipios:', error);
+                        });
+                }
+            });
+        }
+
+        // Confirmar eliminación
+        function confirmDelete(id, name) {
+            if (confirm(`¿Está seguro que desea eliminar "${name}"?`)) {
+                document.getElementById('delete-form-' + id).submit();
+            }
+        }
+    </script>
+</body>
+</html>

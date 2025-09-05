@@ -1,0 +1,18 @@
+# Set default behavior for line endings
+* text=auto
+
+# Ensure these files are always checked out with LF line endings
+*.js eol=lf
+*.json eol=lf
+*.ejs eol=lf
+*.md eol=lf
+*.yml eol=lf
+*.yaml eol=lf
+
+# Ensure these files are always checked out with their original line endings
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary

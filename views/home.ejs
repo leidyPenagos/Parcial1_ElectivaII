@@ -1,0 +1,199 @@
+<%- include('plantillas/header.ejs', { title: 'Inicio - Gestión de Objetos' }) %>
+
+<!-- Mostrar mensajes de éxito o error -->
+<% 
+const urlParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+const success = urlParams.get('success');
+const error = urlParams.get('error');
+%>
+
+<% if (typeof success !== 'undefined' && success) { %>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle"></i> <%= success %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<% } %>
+
+<% if (typeof error !== 'undefined' && error) { %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle"></i> <%= error %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<% } %>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h4 class="mb-0">
+                            <i class="bi bi-list-ul"></i> Lista de Objetos
+                        </h4>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <a href="/create" class="btn btn-light">
+                            <i class="bi bi-plus-circle"></i> Crear Nuevo
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <!-- Formulario de filtros -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title">
+                                    <i class="bi bi-funnel"></i> Filtrar Objetos
+                                </h6>
+                                <form method="GET" action="/" class="row g-3">
+                                    <div class="col-md-4">
+                                        <label for="filter" class="form-label">Filtrar por:</label>
+                                        <select name="filter" id="filter" class="form-select">
+                                            <option value="">Seleccionar campo</option>
+                                            <option value="fecha" <%= filter === 'fecha' ? 'selected' : '' %>>Fecha</option>
+                                            <option value="departamento" <%= filter === 'departamento' ? 'selected' : '' %>>Departamento</option>
+                                            <option value="municipio" <%= filter === 'municipio' ? 'selected' : '' %>>Municipio</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="value" class="form-label">Valor:</label>
+                                        <input type="text" name="value" id="value" class="form-control" 
+                                               value="<%= value %>" placeholder="Ingrese el valor a buscar">
+                                    </div>
+                                    <div class="col-md-4 d-flex align-items-end">
+                                        <button type="submit" class="btn btn-primary me-2">
+                                            <i class="bi bi-search"></i> Filtrar
+                                        </button>
+                                        <a href="/" class="btn btn-outline-secondary">
+                                            <i class="bi bi-x-circle"></i> Limpiar
+                                        </a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabla de objetos -->
+                <% if (objects.length > 0) { %>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Descripción</th>
+                                    <th>Fecha</th>
+                                    <th>Departamento</th>
+                                    <th>Municipio</th>
+                                    <th>Categoría</th>
+                                    <th width="150">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% objects.forEach(object => { %>
+                                    <tr>
+                                        <td>
+                                            <strong><%= object.nombre %></strong>
+                                        </td>
+                                        <td>
+                                            <span class="text-muted">
+                                                <%= object.descripcion.length > 50 
+                                                    ? object.descripcion.substring(0, 50) + '...'
+                                                    : object.descripcion %>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <i class="bi bi-calendar3"></i>
+                                            <%= new Date(object.fecha).toLocaleDateString('es-CO') %>
+                                        </td>
+                                        <td>
+                                            <i class="bi bi-geo-alt"></i>
+                                            <% 
+                                                const dept = departments.find(d => d.name === object.departamento);
+                                                %>
+                                            <%= dept ? dept.name : object.departamento %>
+                                        </td>
+                                        <td>
+                                            <i class="bi bi-pin-map"></i>
+                                            <%= object.municipio %>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">
+                                                <%= object.categoria || 'General' %>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <a href="/edit/<%= object.id %>" 
+                                                   class="btn btn-outline-primary" 
+                                                   title="Editar">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <button type="button" 
+                                                        class="btn btn-outline-danger"
+                                                        onclick="confirmDelete('<%= object.id %>', '<%= object.nombre %>')"
+                                                        title="Eliminar">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                            
+                                            <!-- Formulario oculto para eliminar -->
+                                            <form id="delete-form-<%= object.id %>" 
+                                                  method="POST" 
+                                                  action="/delete/<%= object.id %>" 
+                                                  style="display: none;">
+                                            </form>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Información de resultados -->
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle"></i>
+                                Mostrando <%= objects.length %> objeto(s)
+                                <% if (filter && value) { %>
+                                    filtrado(s) por <strong><%= filter %></strong>: "<strong><%= value %></strong>"
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                <% } else { %>
+                    <!-- Mensaje cuando no hay objetos -->
+                    <div class="text-center py-5">
+                        <div class="mb-4">
+                            <i class="bi bi-inbox display-1 text-muted"></i>
+                        </div>
+                        <h5 class="text-muted">No hay objetos disponibles</h5>
+                        <p class="text-muted">
+                            <% if (filter && value) { %>
+                                No se encontraron objetos que coincidan con el filtro aplicado.
+                            <% } else { %>
+                                Comience creando su primer objeto.
+                            <% } %>
+                        </p>
+                        <div class="mt-3">
+                            <% if (filter && value) { %>
+                                <a href="/" class="btn btn-outline-primary me-2">
+                                    <i class="bi bi-x-circle"></i> Limpiar Filtros
+                                </a>
+                            <% } %>
+                            <a href="/create" class="btn btn-primary">
+                                <i class="bi bi-plus-circle"></i> Crear Primer Objeto
+                            </a>
+                        </div>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('plantillas/footer.ejs') %>

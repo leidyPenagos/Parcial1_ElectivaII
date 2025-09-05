@@ -1,0 +1,226 @@
+<%- include('plantillas/header.ejs', { 
+    title: editing ? 'Editar Objeto - Gestión de Objetos' : 'Crear Objeto - Gestión de Objetos' 
+}) %>
+
+<!-- Mostrar mensajes de error -->
+<% 
+const urlParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+const error = urlParams.get('error');
+%>
+
+<% if (typeof error !== 'undefined' && error) { %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle"></i> <%= error %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<% } %>
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <% if (editing) { %>
+                        <i class="bi bi-pencil"></i> Editar Objeto
+                    <% } else { %>
+                        <i class="bi bi-plus-circle"></i> Crear Nuevo Objeto
+                    <% } %>
+                </h4>
+            </div>
+            
+            <div class="card-body">
+                <form method="POST" action="<%= editing ? '/edit/' + object.id : '/create' %>">
+                    <div class="row">
+                        <!-- Nombre -->
+                        <div class="col-md-12 mb-3">
+                            <label for="nombre" class="form-label">
+                                <i class="bi bi-person"></i> Nombre *
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="nombre" 
+                                   name="nombre" 
+                                   value="<%= object ? object.nombre : '' %>"
+                                   placeholder="Ingrese el nombre del objeto"
+                                   required>
+                        </div>
+
+                        <!-- Descripción -->
+                        <div class="col-md-12 mb-3">
+                            <label for="descripcion" class="form-label">
+                                <i class="bi bi-text-paragraph"></i> Descripción *
+                            </label>
+                            <textarea class="form-control" 
+                                      id="descripcion" 
+                                      name="descripcion" 
+                                      rows="3"
+                                      placeholder="Ingrese la descripción del objeto"
+                                      required><%= object ? object.descripcion : '' %></textarea>
+                        </div>
+
+                        <!-- Fecha -->
+                        <div class="col-md-6 mb-3">
+                            <label for="fecha" class="form-label">
+                                <i class="bi bi-calendar3"></i> Fecha *
+                            </label>
+                            <input type="date" 
+                                   class="form-control" 
+                                   id="fecha" 
+                                   name="fecha" 
+                                   value="<%= object ? object.fecha : '' %>"
+                                   required>
+                        </div>
+
+                        <!-- Categoría -->
+                        <div class="col-md-6 mb-3">
+                            <label for="categoria" class="form-label">
+                                <i class="bi bi-tag"></i> Categoría
+                            </label>
+                            <select class="form-select" id="categoria" name="categoria">
+                                <option value="General" <%= (object && object.categoria === 'General') ? 'selected' : '' %>>General</option>
+                                <option value="Importante" <%= (object && object.categoria === 'Importante') ? 'selected' : '' %>>Importante</option>
+                                <option value="Urgente" <%= (object && object.categoria === 'Urgente') ? 'selected' : '' %>>Urgente</option>
+                                <option value="Proyecto" <%= (object && object.categoria === 'Proyecto') ? 'selected' : '' %>>Proyecto</option>
+                                <option value="Personal" <%= (object && object.categoria === 'Personal') ? 'selected' : '' %>>Personal</option>
+                            </select>
+                        </div>
+
+                        <!-- Departamento -->
+                        <div class="col-md-6 mb-3">
+                            <label for="departamento" class="form-label">
+                                <i class="bi bi-geo-alt"></i> Departamento *
+                            </label>
+                            <select class="form-select" 
+                                    id="departamento" 
+                                    name="departamento" 
+                                    required>
+                                <option value="">Seleccione un departamento</option>
+                                <% departments.forEach(dept => { %>
+                                    <option value="<%= dept.name %>" 
+                                            data-code="<%= dept.code %>"
+                                            <%= (object && object.departamento === dept.name) ? 'selected' : '' %>>
+                                        <%= dept.name %>
+                                    </option>
+                                <% }); %>
+                            </select>
+                        </div>
+
+                        <!-- Municipio -->
+                        <div class="col-md-6 mb-3">
+                            <label for="municipio" class="form-label">
+                                <i class="bi bi-pin-map"></i> Municipio *
+                            </label>
+                            <select class="form-select" 
+                                    id="municipio" 
+                                    name="municipio" 
+                                    required 
+                                    <%= !editing ? 'disabled' : '' %>>
+                                <option value="">Seleccione un municipio</option>
+                                <% if (editing && towns.length > 0) { %>
+                                    <% towns.forEach(town => { %>
+                                        <option value="<%= town.name %>" 
+                                                <%= (object && object.municipio === town.name) ? 'selected' : '' %>>
+                                            <%= town.name %>
+                                        </option>
+                                    <% }); %>
+                                <% } %>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a href="/" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left"></i> Cancelar
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <% if (editing) { %>
+                                        <i class="bi bi-check-circle"></i> Actualizar Objeto
+                                    <% } else { %>
+                                        <i class="bi bi-plus-circle"></i> Crear Objeto
+                                    <% } %>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Información adicional -->
+        <div class="card mt-4">
+            <div class="card-body">
+                <h6 class="card-title">
+                    <i class="bi bi-info-circle"></i> Información
+                </h6>
+                <ul class="list-unstyled mb-0">
+                    <li><i class="bi bi-check2"></i> Los campos marcados con (*) son obligatorios</li>
+                    <li><i class="bi bi-check2"></i> Al seleccionar un departamento se cargarán automáticamente sus municipios</li>
+                    <li><i class="bi bi-check2"></i> Los datos se guardan en formato JSON</li>
+                    <% if (editing) { %>
+                        <li class="text-muted mt-2">
+                            <small>
+                                <i class="bi bi-clock"></i> 
+                                Creado: <%= new Date(object.fechaCreacion).toLocaleString('es-CO') %>
+                                <% if (object.fechaModificacion) { %>
+                                    <br>
+                                    <i class="bi bi-pencil"></i> 
+                                    Última modificación: <%= new Date(object.fechaModificacion).toLocaleString('es-CO') %>
+                                <% } %>
+                            </small>
+                        </li>
+                    <% } %>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Script específico para la página de creación/edición
+    document.addEventListener('DOMContentLoaded', function() {
+        const departmentSelect = document.getElementById('departamento');
+        const municipalitySelect = document.getElementById('municipio');
+        
+        // Solo agregar el event listener si ambos elementos existen
+        if (departmentSelect && municipalitySelect) {
+            departmentSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                const departmentCode = selectedOption.getAttribute('data-code');
+                
+                // Limpiar municipios
+                municipalitySelect.innerHTML = '<option value="">Seleccione un municipio</option>';
+                municipalitySelect.disabled = !departmentCode;
+                
+                if (departmentCode) {
+                    // Mostrar loading
+                    municipalitySelect.innerHTML = '<option value="">Cargando municipios...</option>';
+                    
+                    // Cargar municipios del departamento seleccionado
+                    fetch(`/api/towns/${departmentCode}`)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Error en la respuesta del servidor');
+                            }
+                            return response.json();
+                        })
+                        .then(towns => {
+                            municipalitySelect.innerHTML = '<option value="">Seleccione un municipio</option>';
+                            towns.forEach(town => {
+                                const option = document.createElement('option');
+                                option.value = town.name;
+                                option.textContent = town.name;
+                                municipalitySelect.appendChild(option);
+                            });
+                        })
+                        .catch(error => {
+                            console.error('Error cargando municipios:', error);
+                            municipalitySelect.innerHTML = '<option value="">Error cargando municipios</option>';
+                        });
+                }
+            });
+        }
+    });
+</script>
